@@ -1,11 +1,17 @@
-RSU-Decision-Helper/
-│── RSUHelper/
-│   │── __init__.py            # Package initialization
-│   │── __main__.py            # Entry point for `python -m RSUHelper`
-│   │── arguments.py           # Handles user input
-│   │── calculations.py        # Computes profits
-│   │── cli.py                 # Optional: For CLI support
-│── README.md
-│── setup.py                   # Enables installation as a package
-│── requirements.txt            # Dependencies
-│── .gitignore
+.
+├── FolderStructure.txt
+├── README.md
+├── requirements.txt
+├── RSUHelper
+│   ├── arguments.py
+│   ├── calculations.py
+│   ├── __init__.py
+│   ├── __main__.py
+│   ├── __pycache__
+│   │   ├── arguments.cpython-312.pyc
+│   │   ├── calculations.cpython-312.pyc
+│   │   ├── __init__.cpython-312.pyc
+│   │   ├── __main__.cpython-312.pyc
+│   │   └── stock_price.cpython-312.pyc
+│   └── stock_price.py
+└── setup.py

@@ -18,12 +18,6 @@ def calculate_profit(current_price: float, expected_price: float, shares_vested:
         "Recommendation": recommendation
     }
 
-
-def get_moving_average(ticker_symbol: str, period="50d") -> float:
-    stock = yf.Ticker(ticker_symbol)
-    history = stock.histroy(period=period)
-    return round(history["Close"].mean(), 2)
-
 def calculate_gains_since_vesting(vest_price: float | int, current_price: float | int, shares_vested: int | float) -> Dict[str, Any]:
     '''Calculate gain/loss since vesting'''
 
