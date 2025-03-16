@@ -5,11 +5,13 @@
 ├── RSUHelper
 │   ├── arguments.py
 │   ├── calculations.py
+│   ├── forecasting.py
 │   ├── __init__.py
 │   ├── __main__.py
 │   ├── __pycache__
 │   │   ├── arguments.cpython-312.pyc
 │   │   ├── calculations.cpython-312.pyc
+│   │   ├── forecasting.cpython-312.pyc
 │   │   ├── __init__.cpython-312.pyc
 │   │   ├── __main__.cpython-312.pyc
 │   │   └── stock_price.cpython-312.pyc

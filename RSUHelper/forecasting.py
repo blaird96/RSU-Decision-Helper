@@ -5,7 +5,7 @@ import logging
 
 # Statistical Modeling Imports
 from arch import arch_model
-from statsmodels.tsa.arima.model import ARIMIA as arima
+from statsmodels.tsa.arima.model import ARIMA as arima
 
 # Initializing logging
 logger = logging.getLogger(__name__)
@@ -16,6 +16,21 @@ class StockForecaster:
         self.stock = yf.Ticker(ticker_symbol)
         self.history = self.stock.history(period=period)
         self.rng = np.random.default_rng(0)
+        self.preprocessing_data()
+
+    def preprocessing_data(self):
+        """Prepares historical data for forecasting models."""
+        if self.history.empty:
+            logger.error("Insufficient datra for preprocessing.")
+        
+        # Standardizing date index for ARIMA
+        if not isinstance(self.history.index, pd.PeriodIndex):
+            self.history.index = pd.DatetimeIndex(self.history.index).tz_localize(None).to_period("D")
+
+        # Scale returns for GARCH (if applicable)
+        if "Close" in self.history.columns:
+            self.history["Scaled Returns"] =self.history["Close"].pct_change().dropna() * 100  # Scaling for better optimizer performance
+
 
     def get_moving_average(self, period=50) -> float:
         ''' Retires the moving average; default period is 50 days'''
@@ -41,7 +56,7 @@ class StockForecaster:
         if self.history.empty:
             logger.error("Insufficient data for GARCH.")
         
-        returns = self.history["Close"].pct_change().dropna()
+        returns = self.history["Scaled Returns"].dropna()
         garch = arch_model(returns, vol='Garch', p=1, q=1)  # GARCH(1,1) is the most commonly used GARCH method in financial analysis due to financial clustering.
         garch_fit = garch.fit(disp="off")
         forecast = garch_fit.forecast(horizon=252)
