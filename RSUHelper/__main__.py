@@ -7,7 +7,8 @@ from RSUHelper.arguments import get_user_input
 from RSUHelper.calculations import (
     calculate_profit,
     calculate_gains_since_vesting,
-    required_gain_to_offset_shorting_loss
+    required_gain_to_offset_shorting_loss,
+    get_vest_price
 )
 
 # Initializing logger
@@ -55,13 +56,18 @@ def process_predictions(ticker_symbol, current_price, vest_price, shares_vested)
 def get_user_inputs():
     """Handles user input for stock-related data."""
     ticker_symbol = input("Enter ticker symbol (e.g., AAPL): ").upper()
-    vest_price = float(input("Enter stock price at vesting: "))
+    vesting_date = input("Enter vesting date (YYYY-MM-DD): ")
     shares_vested = float(input("Enter the number of vested shares: "))
-    return ticker_symbol, vest_price, shares_vested
+    return ticker_symbol, vesting_date, shares_vested
 
 def main():
     """Main function to handle logic flow."""
-    ticker_symbol, vest_price, shares_vested = get_user_inputs()
+    ticker_symbol, vesting_date, shares_vested = get_user_inputs()
+    vest_price = get_vest_price(ticker_symbol, vesting_date)
+    if vest_price is None:
+        e = logger.error("Could not retrieve vesting price. Exiting.")
+        return e
+
     current_price = get_stock_price(ticker_symbol=ticker_symbol)
     if current_price is None:
         e = logger.error("Could not retrieve stock price. Exiting.")
