@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from RSUHelper.stock_price import get_stock_price
-
+from RSUHelper.calculations import get_vest_price
 
 class RSUInputForm:
     def __init__(self, root):
@@ -29,6 +29,17 @@ class RSUInputForm:
             shares = float(self.entries["shares"].get().strip())
             vest_price_input = self.entries["vest_price"].get().strip()
             vest_date_input = self.entries["vest_date"].get().strip()
+            
+            # Fetch vesting price from Yahoo if vesting data is provided
+            vest_price = None
+            if vest_date_input:
+                vest_price = get_vest_price(ticker, vest_date_input)
+                if vest_price is None:
+                    raise(ValueError("Could not retrieve vesting price. Please try a different date."))
+            
+            # If user entered a manual vesting price, override it
+            if vest_price_input:
+                vest_price = float(vest_price_input)
 
             if not ticker or not shares:
                 raise ValueError("Missing required fields.")

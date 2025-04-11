@@ -1,4 +1,6 @@
+import tkinter as tk
 import logging
+import sys
 
 # Local Imports
 from RSUHelper.stock_price import get_stock_price
@@ -60,8 +62,19 @@ def get_user_inputs():
     shares_vested = float(input("Enter the number of vested shares: "))
     return ticker_symbol, vesting_date, shares_vested
 
+def load_gui():
+    from RSUHelper.gui.main_gui import RSUHelperApp
+    root = tk.Tk()
+    app = RSUHelperApp(root)
+    root.mainloop()
+
 def main():
     """Main function to handle logic flow."""
+    if "--gui" in sys.argv:
+        load_gui()
+        return
+
+    # Default: CLI Logic
     ticker_symbol, vesting_date, shares_vested = get_user_inputs()
     vest_price = get_vest_price(ticker_symbol, vesting_date)
     if vest_price is None:
