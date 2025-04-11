@@ -1,6 +1,10 @@
+import logging
 import yfinance as yf
 from typing import Dict, Any
 from datetime import datetime, timedelta
+
+# Initializing logger
+logger = logging.getLogger(__name__)
 
 def calculate_profit(current_price: float, expected_price: float, shares_vested: float | int, short_term_tax=0.37, long_term_tax=0.2) -> Dict[str, Any]:
     ''' Calculate short-term vs. long-term profists and delta'''
@@ -44,27 +48,27 @@ def get_vest_price(ticker_symbol: str, vesting_date: str) -> float | None:
 
         stock = yf.Ticker(ticker_symbol)
 
-        end_date = (vesting_date_obj + timedelta(days=1)).strftime("%Y-%m-%d")
-        history = stock.history(start=vesting_date, end=end_date)
+        end_date = vesting_date_obj + timedelta(days=1)
+        history = stock.history(start=vesting_date_obj.strftime("%Y-%m-%d"), end=end_date.strftime("%Y-%m-%d"))
 
         # In the event of no data, look for the nearest prior trading day (up to 10 days back)
         days_back = 1
-        while history.empty and days_back < 10:
+        while history.empty and days_back <= 10:
             new_date = vesting_date_obj - timedelta(days=days_back)
-            new_end_date = (new_date + timedelta(days=1)).strftime("%Y-%m-%d")
-            history = stock.history(start=new_date.strftime("%Y-%m-%d"), end=new_end_date)
+            new_end_date = (new_date + timedelta(days=1))
+            history = stock.history(start=new_date.strftime("%Y-%m-%d"), end=new_end_date.strftime("%Y-%m-%d"))
             days_back += 1
 
         if not history.empty:
             return round(history["Close"].iloc[0], 2)
-
-        if vesting_price is not None and not vesting_price.empty:
-            return round(vesting_price.iloc[0], 2)
+        else:
+            logger.warning(f"No trading data found for {ticker_symbol} within 10 days before {vesting_date}")
+            print(f"Warning: Could not find stock data for {ticker_symbol}")
+            return None
 
     except Exception as e:
         print(f"Error fetching vesting price: {e}")
-
-    return None
+        return None
 
 def required_gain_to_offset_shorting_loss(short_term_profit: float | int, long_term_profit: float | int, shares_vested: float | int) -> Dict[str, Any]:
     ''' Calculates price increase needed to make holding a better option. '''

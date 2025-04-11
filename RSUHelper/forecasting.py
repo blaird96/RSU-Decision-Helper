@@ -11,11 +11,14 @@ from statsmodels.tsa.arima.model import ARIMA as arima
 logger = logging.getLogger(__name__)
 
 class StockForecaster:
-    def __init__(self, ticker_symbol: str, period="2y"):
+    def __init__(self, ticker_symbol: str, period="2y", simulations=1000, arima_order=(5, 1, 0)):
         self.ticker_symbole = ticker_symbol
         self.stock = yf.Ticker(ticker_symbol)
         self.history = self.stock.history(period=period)
         self.rng = np.random.default_rng(0)
+        self.preprocessing_data()
+        self.simulations = simulations
+        self.arima_order = arima_order
         self.preprocessing_data()
 
     def preprocessing_data(self):
@@ -46,7 +49,7 @@ class StockForecaster:
             logger.error("Insufficient data for ARIMA.")
             return None
         
-        model = arima(self.history["Close"], order=(5, 1, 0))
+        model = arima(self.history["Close"], order=(self.arima_order))
         model_fit = model.fit()
         forecast = model_fit.forecast(steps=252)  # Predict 252 represents the number of trading days.
         return round(forecast.iloc[-1], 2)
@@ -65,7 +68,7 @@ class StockForecaster:
         return round(last_price * (1 + expected_return), 2)
     
 
-    def monte_carlo_simulation(self, simulations=1000, days=252) -> float | None:
+    def monte_carlo_simulation(self, days=252) -> float | None:
         ''' Statistical method reliant on a normal distribution '''
 
         if self.history.empty:
@@ -77,8 +80,8 @@ class StockForecaster:
         volatility = log_returns.std()
         last_price = self.history["Close"].iloc[-1]
 
-        future_prices = np.zeros(simulations)
-        for i in range(simulations):
+        future_prices = np.zeros(self.simulations)
+        for i in range(self.simulations):
             daily_returns = self.rng.normal(drift, volatility, days)
             price_series = last_price * np.exp(np.cumsum(daily_returns))
             future_prices[i] = price_series[-1]
@@ -91,11 +94,7 @@ class StockForecaster:
             "Exponential Moving Average (50d)": self.get_exponential_moving_get_moving_average(),
             "ARIMA Prediction": self.predict_arima(),
             "GARCH Prediction": self.predict_garch(),
-            "Monte Carlo Simulation": self.monte_carlo_simulation() 
+            "Monte Carlo Simulation": self.monte_carlo_simulation(days=252) 
         }
-
-        print("\nStock Price Predictions:")
-        for method, price in predictions.items():
-            print(f"{method}:\t${price}")
 
         return predictions
